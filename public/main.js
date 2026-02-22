@@ -4,54 +4,68 @@ import { VoiceLogic } from './voice-logic.js';
 const roomManager = new RoomManager();
 const voiceLogic = new VoiceLogic();
 
-// 重複再生防止のための「再生済みIDリスト」
-const processedMessageIds = new Set();
-let isMicOn = false;
+// 起動時にすでに存在するメッセージを無視するためのフラグ
+let isInitialLoad = true;
+const roomJoinTime = Date.now();
 
 function transitionToRoomUI(roomCode) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('chat-screen').style.display = 'block';
     document.getElementById('displayRoom').innerText = `Room: ${roomCode}`;
 
-    roomManager.listenToRoomData(
-        (messagesData) => {
-            const messageLog = document.getElementById('messageLog');
-            if (!messagesData) return;
+    // 1. ユーザーリストの監視
+    roomManager.listenToUsers((usersData) => {
+        const userList = document.getElementById('userList');
+        userList.innerHTML = "";
+        if (!usersData) return;
+        Object.values(usersData).forEach(user => {
+            const li = document.createElement('li');
+            li.innerText = "● " + user.name;
+            userList.appendChild(li);
+        });
+    });
 
-            // IDを元に、新しいメッセージだけを特定する
-            Object.keys(messagesData).forEach(msgId => {
-                if (!processedMessageIds.has(msgId)) {
-                    const message = messagesData[msgId];
-                    
-                    // 画面に追加
-                    const div = document.createElement('div');
-                    div.className = 'message-bubble';
-                    div.innerHTML = `<strong>${message.sender}</strong>: ${message.text}`;
-                    messageLog.appendChild(div);
-                    messageLog.scrollTop = messageLog.scrollHeight;
+    // 2. メッセージの監視（2回再生を防ぐためにonChildAddedを使用）
+    roomManager.listenToMessages((msgId, message) => {
+        // 部屋に入るより前の古いメッセージは無視する
+        if (message.timestamp < roomJoinTime - 5000) return;
 
-                    // 再生
-                    voiceLogic.playVoice(message.text, message.voiceType);
+        const messageLog = document.getElementById('messageLog');
+        
+        // 画面にメッセージを表示
+        const div = document.createElement('div');
+        div.className = 'message-bubble';
+        div.innerHTML = `<strong>${message.sender}</strong>: ${message.text}`;
+        messageLog.appendChild(div);
+        messageLog.scrollTop = messageLog.scrollHeight;
 
-                    // 再生済みリストに登録
-                    processedMessageIds.add(msgId);
-                }
-            });
-        },
-        (usersData) => {
-            const userList = document.getElementById('userList');
-            userList.innerHTML = "";
-            if (!usersData) return;
-            Object.values(usersData).forEach(user => {
-                const li = document.createElement('li');
-                li.innerText = "● " + user.name;
-                userList.appendChild(li);
-            });
+        // 【最重要】自分が言ったボイスは自分に流さない！（相手にだけ流す）
+        if (message.sender !== roomManager.currentUserName) {
+            voiceLogic.playVoice(message.text, message.voiceType);
         }
-    );
+    });
+
+    // 3. 部屋に入った瞬間に自動でマイクをONにする！
+    startMicAuto();
 }
 
-// 部屋作成・参加
+function startMicAuto() {
+    const btnToggleMic = document.getElementById('btnToggleMic');
+    const micStatusIndicator = document.getElementById('micStatusIndicator');
+
+    // UIを「ON」の状態にする
+    micStatusIndicator.innerText = "マイクON: あなたの声を送信中";
+    micStatusIndicator.classList.add('active');
+    btnToggleMic.innerText = "マイクをOFFにする";
+    btnToggleMic.classList.remove('muted');
+
+    voiceLogic.startAlwaysOn((text) => {
+        const selectedVoice = document.getElementById('selectVoice').value;
+        roomManager.sendMessage(text, selectedVoice);
+    });
+}
+
+// ボタン操作
 document.getElementById('btnCreate').onclick = async () => {
     const name = document.getElementById('inputName').value;
     const code = document.getElementById('inputRoomCode').value;
@@ -66,31 +80,16 @@ document.getElementById('btnJoin').onclick = async () => {
 
 document.getElementById('btnLeave').onclick = () => roomManager.leaveRoom();
 
-// 【常時ボイチャのトグル処理】
-const btnToggleMic = document.getElementById('btnToggleMic');
-const micStatusIndicator = document.getElementById('micStatusIndicator');
-
-btnToggleMic.onclick = () => {
-    isMicOn = !isMicOn;
-
-    if (isMicOn) {
-        // マイクON
-        btnToggleMic.innerText = "マイクをOFFにする";
-        btnToggleMic.classList.add('on');
-        micStatusIndicator.innerText = "マイクON (あなたの声を送信中...)";
-        micStatusIndicator.classList.add('on');
-
-        voiceLogic.startContinuousListening((detectedText) => {
-            const voiceType = document.getElementById('selectVoice').value;
-            roomManager.sendMessage(detectedText, voiceType);
-        });
+// ミュート（マイクON/OFF）切り替え
+document.getElementById('btnToggleMic').onclick = function() {
+    const micStatusIndicator = document.getElementById('micStatusIndicator');
+    if (voiceLogic.isMicActive) {
+        voiceLogic.stopAlwaysOn();
+        this.innerText = "マイクをONにする";
+        this.classList.add('muted');
+        micStatusIndicator.innerText = "マイクOFF（ミュート中）";
+        micStatusIndicator.classList.remove('active');
     } else {
-        // マイクOFF (ミュート)
-        btnToggleMic.innerText = "マイクをONにする";
-        btnToggleMic.classList.remove('on');
-        micStatusIndicator.innerText = "マイクOFF";
-        micStatusIndicator.classList.remove('on');
-        
-        voiceLogic.stopListening();
+        startMicAuto();
     }
 };
