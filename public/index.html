@@ -2,43 +2,45 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Syllable Voice Chat</title>
+    <title>Voice Syllable Chat</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app">
-        <div id="lobby" class="panel">
+    <div id="container">
+        <div id="login-screen" class="card">
             <h1>Syllable Chat</h1>
-            <input type="text" id="userName" placeholder="あなたの名前">
-            <hr>
-            <div class="room-controls">
-                <input type="text" id="roomCodeInput" maxlength="8" placeholder="8桁のコード">
-                <button id="btnCreateRoom">部屋を作る</button>
-                <button id="btnJoinRoom">部屋に入る</button>
+            <input type="text" id="inputName" placeholder="自分の名前を入力">
+            <div class="room-action">
+                <input type="text" id="inputRoomCode" maxlength="8" placeholder="8桁のコードを入力">
+                <div class="button-group">
+                    <button id="btnCreate">部屋を作る</button>
+                    <button id="btnJoin">参加する</button>
+                </div>
             </div>
         </div>
 
-        <div id="room" class="panel" style="display: none;">
-            <h2 id="displayRoomCode">Room: --------</h2>
-            <div id="chatLog" class="chat-log"></div>
+        <div id="chat-screen" class="card" style="display: none;">
+            <div class="header">
+                <span id="displayRoom">Room: --------</span>
+                <button id="btnLeave">退室</button>
+            </div>
             
-            <div class="voice-controls">
-                <p>名前: <span id="displayName"></span></p>
-                <button id="btnListen" class="mic-button">マイクを長押しして話す</button>
-                <select id="voiceType">
-                    <option value="normal">ノーマル（標準）</option>
-                    <option value="high">高い声（ピコピコ）</option>
-                    <option value="low">低い声（太い）</option>
-                </select>
-                <button id="btnLeave" class="leave-button">退室する</button>
+            <div id="messageLog" class="log-area"></div>
+
+            <div class="controls">
+                <div class="setting-row">
+                    <label>声の音色:</label>
+                    <select id="selectVoice">
+                        <option value="normal">ノーマル</option>
+                        <option value="high">高い声（ピコピコ）</option>
+                        <option value="low">低い声（ボボボー）</option>
+                    </select>
+                </div>
+                <button id="btnTalk" class="talk-button">長押しして話す</button>
             </div>
         </div>
     </div>
 
-    <script type="module" src="firebase-config.js"></script>
-    <script type="module" src="room-manager.js"></script>
-    <script type="module" src="voice-logic.js"></script>
     <script type="module" src="main.js"></script>
 </body>
 </html>
