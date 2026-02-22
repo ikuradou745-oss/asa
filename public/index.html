@@ -2,30 +2,43 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>My Voice Chat</title>
-    <style>
-        body { font-family: sans-serif; text-align: center; background: #f0f0f0; }
-        .box { background: white; padding: 20px; border-radius: 10px; display: inline-block; margin-top: 50px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syllable Voice Chat</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="box">
-        <h1>ボイスチャット</h1>
-        <p>あなたのID: <span id="myId">読み込み中...</span></p>
-        <input type="text" id="idToCall" placeholder="相手のIDを入力">
-        <button onclick="callUser()">通話開始</button>
-        <div id="status">待機中...</div>
+    <div id="app">
+        <div id="lobby" class="panel">
+            <h1>Syllable Chat</h1>
+            <input type="text" id="userName" placeholder="あなたの名前">
+            <hr>
+            <div class="room-controls">
+                <input type="text" id="roomCodeInput" maxlength="8" placeholder="8桁のコード">
+                <button id="btnCreateRoom">部屋を作る</button>
+                <button id="btnJoinRoom">部屋に入る</button>
+            </div>
+        </div>
+
+        <div id="room" class="panel" style="display: none;">
+            <h2 id="displayRoomCode">Room: --------</h2>
+            <div id="chatLog" class="chat-log"></div>
+            
+            <div class="voice-controls">
+                <p>名前: <span id="displayName"></span></p>
+                <button id="btnListen" class="mic-button">マイクを長押しして話す</button>
+                <select id="voiceType">
+                    <option value="normal">ノーマル（標準）</option>
+                    <option value="high">高い声（ピコピコ）</option>
+                    <option value="low">低い声（太い）</option>
+                </select>
+                <button id="btnLeave" class="leave-button">退室する</button>
+            </div>
+        </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        socket.on('me', (id) => {
-            document.getElementById('myId').innerText = id;
-        });
-        function callUser() {
-            alert('これから通話機能を実装します！');
-        }
-    </script>
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="room-manager.js"></script>
+    <script type="module" src="voice-logic.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>
