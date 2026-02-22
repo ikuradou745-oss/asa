@@ -1,100 +1,96 @@
 import { RoomManager } from './room-manager.js';
 import { VoiceLogic } from './voice-logic.js';
 
-const roomManagerInstance = new RoomManager();
-const voiceLogicInstance = new VoiceLogic();
+const roomManager = new RoomManager();
+const voiceLogic = new VoiceLogic();
 
-// すでに再生したメッセージを二重に再生しないためのタイムスタンプ
-let lastProcessedMessageTimestamp = Date.now();
+// 重複再生防止のための「再生済みIDリスト」
+const processedMessageIds = new Set();
+let isMicOn = false;
 
-// 部屋に入ったときの画面切り替え処理
 function transitionToRoomUI(roomCode) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('chat-screen').style.display = 'block';
     document.getElementById('displayRoom').innerText = `Room: ${roomCode}`;
 
-    // データベースの変更を監視して画面を更新する
-    roomManagerInstance.listenToRoomData(
+    roomManager.listenToRoomData(
         (messagesData) => {
-            const messageLogElement = document.getElementById('messageLog');
-            messageLogElement.innerHTML = "";
-            
+            const messageLog = document.getElementById('messageLog');
             if (!messagesData) return;
 
-            // 古い順に並び替え
-            const sortedMessages = Object.values(messagesData).sort((a, b) => a.timestamp - b.timestamp);
-            
-            sortedMessages.forEach(message => {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message-bubble';
-                messageDiv.innerHTML = `<strong>${message.sender}</strong>: ${message.text}`;
-                messageLogElement.appendChild(messageDiv);
-                
-                // 新しいメッセージが来たら、日本語音声エンジンで読み上げる！
-                if (message.timestamp > lastProcessedMessageTimestamp) {
-                    voiceLogicInstance.playVoice(message.text, message.voiceType);
-                    lastProcessedMessageTimestamp = message.timestamp;
+            // IDを元に、新しいメッセージだけを特定する
+            Object.keys(messagesData).forEach(msgId => {
+                if (!processedMessageIds.has(msgId)) {
+                    const message = messagesData[msgId];
+                    
+                    // 画面に追加
+                    const div = document.createElement('div');
+                    div.className = 'message-bubble';
+                    div.innerHTML = `<strong>${message.sender}</strong>: ${message.text}`;
+                    messageLog.appendChild(div);
+                    messageLog.scrollTop = messageLog.scrollHeight;
+
+                    // 再生
+                    voiceLogic.playVoice(message.text, message.voiceType);
+
+                    // 再生済みリストに登録
+                    processedMessageIds.add(msgId);
                 }
             });
-            // 常に一番下（最新メッセージ）にスクロールする
-            messageLogElement.scrollTop = messageLogElement.scrollHeight;
         },
         (usersData) => {
-            const userListElement = document.getElementById('userList');
-            userListElement.innerHTML = "";
-            
+            const userList = document.getElementById('userList');
+            userList.innerHTML = "";
             if (!usersData) return;
-
             Object.values(usersData).forEach(user => {
-                const listElement = document.createElement('li');
-                listElement.innerText = "🟢 " + user.name;
-                userListElement.appendChild(listElement);
+                const li = document.createElement('li');
+                li.innerText = "● " + user.name;
+                userList.appendChild(li);
             });
         }
     );
 }
 
-// ボタンのクリックイベント設定
+// 部屋作成・参加
 document.getElementById('btnCreate').onclick = async () => {
-    const inputNameValue = document.getElementById('inputName').value;
-    const inputRoomCodeValue = document.getElementById('inputRoomCode').value;
-    if (inputNameValue && await roomManagerInstance.createRoom(inputRoomCodeValue, inputNameValue)) {
-        transitionToRoomUI(inputRoomCodeValue);
-    } else if (!inputNameValue) {
-        alert("名前を入力してください。");
-    }
+    const name = document.getElementById('inputName').value;
+    const code = document.getElementById('inputRoomCode').value;
+    if (name && await roomManager.createRoom(code, name)) transitionToRoomUI(code);
 };
 
 document.getElementById('btnJoin').onclick = async () => {
-    const inputNameValue = document.getElementById('inputName').value;
-    const inputRoomCodeValue = document.getElementById('inputRoomCode').value;
-    if (inputNameValue && await roomManagerInstance.joinRoom(inputRoomCodeValue, inputNameValue)) {
-        transitionToRoomUI(inputRoomCodeValue);
-    } else if (!inputNameValue) {
-        alert("名前を入力してください。");
+    const name = document.getElementById('inputName').value;
+    const code = document.getElementById('inputRoomCode').value;
+    if (name && await roomManager.joinRoom(code, name)) transitionToRoomUI(code);
+};
+
+document.getElementById('btnLeave').onclick = () => roomManager.leaveRoom();
+
+// 【常時ボイチャのトグル処理】
+const btnToggleMic = document.getElementById('btnToggleMic');
+const micStatusIndicator = document.getElementById('micStatusIndicator');
+
+btnToggleMic.onclick = () => {
+    isMicOn = !isMicOn;
+
+    if (isMicOn) {
+        // マイクON
+        btnToggleMic.innerText = "マイクをOFFにする";
+        btnToggleMic.classList.add('on');
+        micStatusIndicator.innerText = "マイクON (あなたの声を送信中...)";
+        micStatusIndicator.classList.add('on');
+
+        voiceLogic.startContinuousListening((detectedText) => {
+            const voiceType = document.getElementById('selectVoice').value;
+            roomManager.sendMessage(detectedText, voiceType);
+        });
+    } else {
+        // マイクOFF (ミュート)
+        btnToggleMic.innerText = "マイクをONにする";
+        btnToggleMic.classList.remove('on');
+        micStatusIndicator.innerText = "マイクOFF";
+        micStatusIndicator.classList.remove('on');
+        
+        voiceLogic.stopListening();
     }
-};
-
-document.getElementById('btnLeave').onclick = () => {
-    roomManagerInstance.leaveRoom();
-};
-
-// マイクボタンの長押しイベント設定
-const talkButtonElement = document.getElementById('btnTalk');
-
-talkButtonElement.onmousedown = () => {
-    talkButtonElement.innerText = "録音中... (離して送信)";
-    talkButtonElement.style.background = "#ff2e63"; // 録音中は色を変える
-    
-    // 話し終わった内容を受け取って送信する
-    voiceLogicInstance.startListening((recognizedText) => {
-        const selectedVoiceTypeValue = document.getElementById('selectVoice').value;
-        roomManagerInstance.sendMessage(recognizedText, selectedVoiceTypeValue);
-    });
-};
-
-talkButtonElement.onmouseup = () => {
-    talkButtonElement.innerText = "長押しして話す";
-    talkButtonElement.style.background = "#e94560"; // 元の色に戻す
-    voiceLogicInstance.stopListening();
 };
