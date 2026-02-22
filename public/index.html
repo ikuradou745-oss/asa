@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>My Voice Chat</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f0f0f0; }
+        .box { background: white; padding: 20px; border-radius: 10px; display: inline-block; margin-top: 50px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>ボイスチャット</h1>
+        <p>あなたのID: <span id="myId">読み込み中...</span></p>
+        <input type="text" id="idToCall" placeholder="相手のIDを入力">
+        <button onclick="callUser()">通話開始</button>
+        <div id="status">待機中...</div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        socket.on('me', (id) => {
+            document.getElementById('myId').innerText = id;
+        });
+        function callUser() {
+            alert('これから通話機能を実装します！');
+        }
+    </script>
+</body>
+</html>
