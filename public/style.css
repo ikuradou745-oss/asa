@@ -77,6 +77,7 @@ input {
     margin-bottom: 5px;
     padding: 8px;
     border-radius: 5px;
+    font-weight: bold;
 }
 
 .main-chat {
@@ -93,6 +94,14 @@ input {
     text-align: left;
 }
 
+.message-bubble {
+    background: #1a1a2e;
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border-left: 4px solid #e94560;
+}
+
 .controls {
     border-top: 2px solid #444;
     padding-top: 20px;
@@ -100,6 +109,7 @@ input {
 
 .voice-settings {
     margin-bottom: 15px;
+    font-size: 1.1rem;
 }
 
 .talk-button {
@@ -111,8 +121,19 @@ input {
     border-radius: 30px;
     font-size: 1.2rem;
     cursor: pointer;
+    transition: background 0.3s;
 }
 
 .talk-button:active { background: #ff2e63; transform: scale(0.98); }
 
-.leave-button { background: #555; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px;}
+.leave-button { 
+    background: #555; 
+    color: white; 
+    border: none; 
+    padding: 10px 15px; 
+    cursor: pointer; 
+    border-radius: 5px;
+}
+.leave-button:hover {
+    background: #777;
+}
