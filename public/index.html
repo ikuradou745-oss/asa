@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Syllable Chat - Pro</title>
+    <title>Voice Syllable Chat - Always ON</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="container">
         <div id="login-screen" class="card">
             <h1>Syllable Chat</h1>
-            <p>8桁のコードで秘密のボイチャ部屋に入ろう</p>
             <div class="input-area">
-                <input type="text" id="inputName" placeholder="あなたの名前">
+                <input type="text" id="inputName" placeholder="あなたの名前を入力">
                 <input type="text" id="inputRoomCode" maxlength="8" placeholder="8桁のコードを入力">
             </div>
             <div class="button-group">
@@ -29,7 +28,7 @@
 
             <div class="room-content">
                 <div class="sidebar">
-                    <h3>ユーザー一覧</h3>
+                    <h3>参加中のユーザー</h3>
                     <ul id="userList"></ul>
                 </div>
                 <div class="main-chat">
@@ -39,24 +38,24 @@
 
             <div class="controls">
                 <div class="voice-settings">
-                    <label>あなたの声の音色:</label>
+                    <label>あなたの声の音色設定:</label>
                     <select id="selectVoice">
                         <option value="normal">標準（人間）</option>
                         <option value="helium">ヘリウムガス（超高い）</option>
-                        <option value="child">子供（可愛らしい）</option>
+                        <option value="pixie">妖精（高くて早い）</option>
                         <option value="giant">巨人（低くて太い）</option>
-                        <option value="demon">魔王（超低い）</option>
-                        <option value="robot">ロボット（無機質）</option>
-                        <option value="fast">早口（せっかち）</option>
-                        <option value="slow">スロー（のんびり）</option>
+                        <option value="demon">魔王（おどろおどろしい）</option>
+                        <option value="robot">ロボット（機械音）</option>
+                        <option value="alien">エイリアン（不気味）</option>
+                        <option value="ghost">幽霊（消え入りそうな声）</option>
                     </select>
                 </div>
                 
-                <div class="mic-status-area">
-                    <div id="micStatusIndicator" class="status-indicator">マイクOFF</div>
-                    <button id="btnToggleMic" class="mic-button">マイクをONにする</button>
+                <div class="mic-status-container">
+                    <div id="micStatusIndicator" class="status-badge">マイク待機中...</div>
+                    <button id="btnToggleMic" class="mic-toggle-btn">マイクをOFFにする</button>
                 </div>
-                <p class="hint-text">※マイクONの間は、喋った言葉が自動的に送信されます。</p>
+                <p class="status-note">※部屋に入ると自動的にマイクがONになります。喋った内容は自動送信されます。</p>
             </div>
         </div>
     </div>
