@@ -62,7 +62,7 @@ export class RoomManager {
     }
 
     sendMessage(messageText, selectedVoiceType) {
-        if (!this.currentRoomCode) return;
+        if (!this.currentRoomCode || !messageText) return;
         const messagesReference = ref(db, `rooms/${this.currentRoomCode}/messages`);
         push(messagesReference, {
             sender: this.currentUserName,
