@@ -1,65 +1,118 @@
 body {
-    background: #121212;
-    color: white;
-    font-family: 'Segoe UI', sans-serif;
+    background-color: #1a1a2e;
+    color: #ffffff;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    margin: 0;
 }
 
-.panel {
-    background: #1e1e1e;
-    padding: 30px;
-    border-radius: 20px;
+.card {
+    background: #16213e;
+    padding: 20px;
+    border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    width: 400px;
+    width: 90%;
+    max-width: 600px;
     text-align: center;
+}
+
+.input-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 input {
     width: 80%;
     padding: 12px;
     margin: 10px 0;
-    background: #333;
-    border: 1px solid #444;
-    color: white;
     border-radius: 8px;
-    text-align: center;
-    font-size: 1.1rem;
-}
-
-button {
-    padding: 12px 20px;
-    margin: 5px;
     border: none;
-    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.button-group button {
+    padding: 10px 20px;
+    margin: 10px;
     cursor: pointer;
+    border-radius: 8px;
+    border: none;
     font-weight: bold;
-    transition: 0.3s;
 }
 
-#btnCreateRoom { background: #3498db; color: white; }
-#btnJoinRoom { background: #2ecc71; color: white; }
-.mic-button { 
-    background: #e74c3c; 
-    color: white; 
-    width: 100%; 
-    height: 60px;
-    font-size: 1.2rem;
-    margin-top: 20px;
-}
-.mic-button:active { background: #c0392b; transform: scale(0.95); }
+#btnCreate { background: #0f3460; color: white; }
+#btnJoin { background: #e94560; color: white; }
 
-.chat-log {
-    height: 200px;
-    overflow-y: auto;
-    background: #111;
-    margin: 15px 0;
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #444;
+    padding-bottom: 10px;
+}
+
+.room-content {
+    display: flex;
+    height: 300px;
+    margin: 20px 0;
+}
+
+.sidebar {
+    width: 30%;
+    border-right: 1px solid #444;
     padding: 10px;
-    border-radius: 10px;
     text-align: left;
 }
 
-.leave-button { background: #95a5a6; color: white; margin-top: 20px; }
+#userList {
+    list-style: none;
+    padding: 0;
+}
+
+#userList li {
+    background: #0f3460;
+    margin-bottom: 5px;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+.main-chat {
+    width: 70%;
+    padding: 10px;
+}
+
+.log-area {
+    height: 100%;
+    overflow-y: auto;
+    background: #0f3460;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: left;
+}
+
+.controls {
+    border-top: 2px solid #444;
+    padding-top: 20px;
+}
+
+.voice-settings {
+    margin-bottom: 15px;
+}
+
+.talk-button {
+    width: 100%;
+    height: 60px;
+    background: #e94560;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.talk-button:active { background: #ff2e63; transform: scale(0.98); }
+
+.leave-button { background: #555; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px;}
