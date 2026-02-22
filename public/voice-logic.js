@@ -1,89 +1,76 @@
 export class VoiceLogic {
     constructor() {
+        // マイクから音声を文字にする機能（SpeechRecognition）
         const SpeechRecognitionApi = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognitionApi) {
-            alert("お使いのブラウザは音声認識に対応していません。Google Chromeを使用してください。");
+            alert("お使いのブラウザは音声認識に対応していません。Google Chromeをご使用ください。");
         }
         this.recognition = new SpeechRecognitionApi();
         this.recognition.lang = 'ja-JP';
         this.recognition.interimResults = false;
 
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // 声を出力する機能（SpeechSynthesis）の準備
+        this.synth = window.speechSynthesis;
+        this.japaneseVoice = null;
+
+        // 日本語の音声モデルをロードしておく
+        this.loadVoices();
+        if (this.synth.onvoiceschanged !== undefined) {
+            this.synth.onvoiceschanged = this.loadVoices.bind(this);
+        }
+    }
+
+    loadVoices() {
+        const voices = this.synth.getVoices();
+        // 日本語の声（Google 日本語など）を探す
+        this.japaneseVoice = voices.find(voice => voice.lang === 'ja-JP') || null;
     }
 
     startListening(onResultCallback) {
-        this.recognition.start();
-        this.recognition.onresult = (event) => {
-            const recognizedText = event.results[0][0].transcript;
-            onResultCallback(recognizedText);
-        };
+        try {
+            this.recognition.start();
+            this.recognition.onresult = (event) => {
+                const recognizedText = event.results[0][0].transcript;
+                onResultCallback(recognizedText);
+            };
+            this.recognition.onerror = (event) => {
+                console.error("音声認識エラー:", event.error);
+            };
+        } catch (e) {
+            console.error("認識を既に開始しています", e);
+        }
     }
 
     stopListening() {
         this.recognition.stop();
     }
 
-    async playVoice(text, voiceType) {
-        if (this.audioContext.state === 'suspended') {
-            await this.audioContext.resume();
+    // 日本語で「あいうえお」と実際に読み上げる関数
+    playVoice(text, voiceType) {
+        if (!text) return;
+
+        // 読み上げ用のオブジェクトを作成
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ja-JP';
+
+        // 日本語の音声モデルがあればセットする
+        if (this.japaneseVoice) {
+            utterance.voice = this.japaneseVoice;
         }
 
-        const charactersArray = text.split('');
-        for (const character of charactersArray) {
-            await this.playSingleSyllable(character, voiceType);
-            // 文字と文字の間の間隔（ミリ秒）
-            await new Promise(resolve => setTimeout(resolve, 120));
+        // 音色（ピッチ）と話すスピードの調整
+        if (voiceType === 'high') {
+            utterance.pitch = 2.0;  // 一番高い声（アニメ声風）
+            utterance.rate = 1.2;   // 少し早口
+        } else if (voiceType === 'low') {
+            utterance.pitch = 0.5;  // 一番低い声（野太い声）
+            utterance.rate = 0.8;   // 少しゆっくり
+        } else {
+            utterance.pitch = 1.0;  // 普通の声
+            utterance.rate = 1.0;   // 普通のスピード
         }
-    }
 
-    async playSingleSyllable(character, voiceType) {
-        return new Promise((resolve) => {
-            // まずはMP3ファイル（例: sounds/normal/あ.mp3）を再生しようと試みる
-            const audioPath = `sounds/${voiceType}/${character}.mp3`;
-            const audioObject = new Audio(audioPath);
-            
-            audioObject.onended = () => {
-                resolve(); // MP3の再生が成功したら次へ
-            };
-
-            // MP3ファイルが見つからない（エラーの）場合は、シンセサイザーで音を作る
-            audioObject.onerror = () => {
-                this.playSynthesizedAnimaleseSound(character, voiceType);
-                setTimeout(resolve, 80); // シンセサイザー音の長さ分だけ待つ
-            };
-
-            // 再生開始
-            audioObject.play().catch(() => {
-                // 自動再生ブロックなどに引っかかった場合もシンセサイザーを使う
-                this.playSynthesizedAnimaleseSound(character, voiceType);
-                setTimeout(resolve, 80);
-            });
-        });
-    }
-
-    // MP3がない場合の「どうぶつの森風」ピコピコ音生成ロジック
-    playSynthesizedAnimaleseSound(character, voiceType) {
-        const oscillatorNode = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
-
-        // ベースとなる周波数（音の高さ）を設定
-        let baseFrequency = 440; // ノーマル
-        if (voiceType === 'high') baseFrequency = 880; // 高い声
-        if (voiceType === 'low') baseFrequency = 220;  // 低い声
-
-        // 文字の文字コードを使って、文字ごとに微妙に音の高さを変える（話している感が出る）
-        const characterCodeOffset = character.charCodeAt(0) % 150;
-        oscillatorNode.frequency.setValueAtTime(baseFrequency + characterCodeOffset, this.audioContext.currentTime);
-
-        // 高い声は電子音っぽく、それ以外は丸い音にする
-        oscillatorNode.type = (voiceType === 'high') ? 'square' : 'sine';
-
-        oscillatorNode.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
-
-        oscillatorNode.start();
-        // 0.08秒だけ短く鳴らして「プッ」という音にする
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, this.audioContext.currentTime + 0.08);
-        oscillatorNode.stop(this.audioContext.currentTime + 0.08);
+        // 実際に喋らせる
+        this.synth.speak(utterance);
     }
 }
