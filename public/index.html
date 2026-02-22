@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Syllable Chat</title>
+    <title>Voice Syllable Chat - Pro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="container">
         <div id="login-screen" class="card">
             <h1>Syllable Chat</h1>
+            <p>8桁のコードで秘密のボイチャ部屋に入ろう</p>
             <div class="input-area">
                 <input type="text" id="inputName" placeholder="あなたの名前">
                 <input type="text" id="inputRoomCode" maxlength="8" placeholder="8桁のコードを入力">
@@ -38,14 +39,24 @@
 
             <div class="controls">
                 <div class="voice-settings">
-                    <label>声の音色:</label>
+                    <label>あなたの声の音色:</label>
                     <select id="selectVoice">
-                        <option value="normal">ノーマル（普通の声）</option>
-                        <option value="high">高い声（アニメ声風）</option>
-                        <option value="low">低い声（太い声）</option>
+                        <option value="normal">標準（人間）</option>
+                        <option value="helium">ヘリウムガス（超高い）</option>
+                        <option value="child">子供（可愛らしい）</option>
+                        <option value="giant">巨人（低くて太い）</option>
+                        <option value="demon">魔王（超低い）</option>
+                        <option value="robot">ロボット（無機質）</option>
+                        <option value="fast">早口（せっかち）</option>
+                        <option value="slow">スロー（のんびり）</option>
                     </select>
                 </div>
-                <button id="btnTalk" class="talk-button">長押しして話す</button>
+                
+                <div class="mic-status-area">
+                    <div id="micStatusIndicator" class="status-indicator">マイクOFF</div>
+                    <button id="btnToggleMic" class="mic-button">マイクをONにする</button>
+                </div>
+                <p class="hint-text">※マイクONの間は、喋った言葉が自動的に送信されます。</p>
             </div>
         </div>
     </div>
