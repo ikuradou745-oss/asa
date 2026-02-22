@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice Syllable Chat</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -9,31 +10,39 @@
     <div id="container">
         <div id="login-screen" class="card">
             <h1>Syllable Chat</h1>
-            <input type="text" id="inputName" placeholder="自分の名前を入力">
-            <div class="room-action">
+            <div class="input-area">
+                <input type="text" id="inputName" placeholder="あなたの名前">
                 <input type="text" id="inputRoomCode" maxlength="8" placeholder="8桁のコードを入力">
-                <div class="button-group">
-                    <button id="btnCreate">部屋を作る</button>
-                    <button id="btnJoin">参加する</button>
-                </div>
+            </div>
+            <div class="button-group">
+                <button id="btnCreate">部屋を作る</button>
+                <button id="btnJoin">参加する</button>
             </div>
         </div>
 
         <div id="chat-screen" class="card" style="display: none;">
             <div class="header">
-                <span id="displayRoom">Room: --------</span>
-                <button id="btnLeave">退室</button>
+                <h2 id="displayRoom">Room: --------</h2>
+                <button id="btnLeave" class="leave-button">終了する</button>
             </div>
-            
-            <div id="messageLog" class="log-area"></div>
+
+            <div class="room-content">
+                <div class="sidebar">
+                    <h3>ユーザー一覧</h3>
+                    <ul id="userList"></ul>
+                </div>
+                <div class="main-chat">
+                    <div id="messageLog" class="log-area"></div>
+                </div>
+            </div>
 
             <div class="controls">
-                <div class="setting-row">
+                <div class="voice-settings">
                     <label>声の音色:</label>
                     <select id="selectVoice">
                         <option value="normal">ノーマル</option>
-                        <option value="high">高い声（ピコピコ）</option>
-                        <option value="low">低い声（ボボボー）</option>
+                        <option value="high">高い声</option>
+                        <option value="low">低い声</option>
                     </select>
                 </div>
                 <button id="btnTalk" class="talk-button">長押しして話す</button>
